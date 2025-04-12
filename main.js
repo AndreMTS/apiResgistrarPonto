@@ -1,14 +1,46 @@
-const { app, BrowserWindow, Tray, Menu } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
-const startAPI = require('./api');
+const fs = require('fs');
+const { startAPI, stopAPI } = require('./api');
 
 let mainWindow;
 let tray = null;
+let currentPort = 3000;
+let apiRunning = false;
+
+// Caminho do config.json
+const configPath = path.join(__dirname, 'config.json');
+
+function loadConfig() {
+  if (fs.existsSync(configPath)) {
+    const config = JSON.parse(fs.readFileSync(configPath));
+    currentPort = config.port || 3000;
+  } else {
+    fs.writeFileSync(configPath, JSON.stringify({ port: currentPort }, null, 2));
+  }
+}
+
+function saveConfig(port) {
+  fs.writeFileSync(configPath, JSON.stringify({ port }, null, 2));
+}
+
+function sendStatus() {
+  if (mainWindow) {
+    mainWindow.webContents.send('porta-api', currentPort);
+    mainWindow.webContents.send('status-api', apiRunning ? '🟢 Ativa' : '🔴 Inativa');
+  }
+}
+
+function sendLog(log) {
+  if (mainWindow) {
+    mainWindow.webContents.send('log-api', log);
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 600,
-    height: 450,
+    height: 500,
     resizable: false,
     icon: path.join(__dirname, 'icon.jpg'),
     webPreferences: {
@@ -19,13 +51,11 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
-  // Ao minimizar, esconde a janela
   mainWindow.on('minimize', (event) => {
     event.preventDefault();
     mainWindow.hide();
   });
 
-  // Ao fechar (clicar no X), esconde a janela ao invés de encerrar o app
   mainWindow.on('close', (event) => {
     if (!app.isQuiting) {
       event.preventDefault();
@@ -38,19 +68,12 @@ function createTray() {
   tray = new Tray(path.join(__dirname, 'icon.jpg'));
 
   const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Mostrar',
-      click: () => {
-        mainWindow.show();
-      },
-    },
-    {
-      label: 'Sair',
-      click: () => {
+    { label: 'Mostrar', click: () => mainWindow.show() },
+    { label: 'Sair', click: () => {
         app.isQuiting = true;
+        stopAPI();
         app.quit();
-      },
-    },
+      }},
   ]);
 
   tray.setToolTip('API Tangerino Ponto');
@@ -61,14 +84,41 @@ function createTray() {
   });
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  createTray();
-  startAPI(); // Inicia a API Express
+async function startOrRestartAPI(port) {
+  if (apiRunning) {
+    await stopAPI();
+    sendLog(`🔁 Reiniciando API na porta ${port}...`);
+  } else {
+    sendLog(`🚀 Iniciando API na porta ${port}...`);
+  }
+
+  try {
+    await startAPI(port, sendLog);
+    apiRunning = true;
+    currentPort = port;
+    saveConfig(port);
+  } catch (err) {
+    apiRunning = false;
+    sendLog(`❌ Erro ao iniciar API: ${err.message}`);
+  }
+
+  sendStatus();
+}
+
+ipcMain.on('solicitar-status', () => {
+  sendStatus();
 });
 
-// Mantém o app rodando mesmo com todas as janelas fechadas
-app.on('window-all-closed', (e) => {
-  // Impede o fechamento completo da aplicação
-  e.preventDefault();
+ipcMain.on('reiniciar-api', (_, novaPorta) => {
+  const porta = parseInt(novaPorta, 10) || currentPort;
+  startOrRestartAPI(porta);
 });
+
+app.whenReady().then(() => {
+  loadConfig();
+  createWindow();
+  createTray();
+  startOrRestartAPI(currentPort);
+});
+
+app.on('window-all-closed', (e) => e.preventDefault());

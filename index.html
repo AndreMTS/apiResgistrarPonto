@@ -1,10 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>API Tangerino</title>
+  <meta charset="UTF-8">
+  <title>API Tangerino</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    h1 {
+      color: #2b7a78;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #e0f7e9;
+      border-left: 5px solid #2ecc71;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input {
+      padding: 6px;
+      width: 100%;
+      max-width: 100px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #2b7a78;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #logs {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f1f1f1;
+      height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+      white-space: pre-wrap;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-    <h2>🟢 API do Registro de Ponto está ativa!</h2>
-    <p>Você pode minimizar e ela continuará rodando em segundo plano.</p>
+  <h1>⚙️ API Tangerino</h1>
+
+  <div class="status">
+    <strong>Status:</strong> <span id="status">Inicializando...</span><br>
+    <strong>Porta atual:</strong> <span id="porta-atual">---</span>
+  </div>
+
+  <label for="nova-porta">Alterar porta:</label>
+  <input type="number" id="nova-porta" placeholder="ex: 3001" min="1024" max="65535" />
+
+  <button id="btn-reiniciar">🔁 Reiniciar API</button>
+  <button id="clearLogs">Limpar Logs</button>
+
+  <h3>🪵 Logs</h3>
+  <div id="logs"></div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const statusSpan = document.getElementById('status');
+    const portaSpan = document.getElementById('porta-atual');
+    const btnReiniciar = document.getElementById('btn-reiniciar');
+    const novaPortaInput = document.getElementById('nova-porta');
+    const logsDiv = document.getElementById('logs');
+
+    ipcRenderer.on('status-api', (_, status) => {
+      statusSpan.textContent = status;
+    });
+
+    ipcRenderer.on('porta-api', (_, porta) => {
+      portaSpan.textContent = porta;
+    });
+
+    ipcRenderer.on('log-api', (_, log) => {
+      logsDiv.innerText += log + '\n';
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    });
+
+    btnReiniciar.addEventListener('click', () => {
+      const novaPorta = novaPortaInput.value;
+      ipcRenderer.send('reiniciar-api', novaPorta || null);
+    });
+
+    // Inicializar com dados atuais
+    ipcRenderer.send('solicitar-status');
+
+
+    document.getElementById('clearLogs').addEventListener('click', () => {
+        debugger
+  const logPanel = document.getElementById('logs');
+  logPanel.innerHTML = ''; // Limpa os logs visíveis na tela
+});
+
+  </script>
 </body>
 </html>

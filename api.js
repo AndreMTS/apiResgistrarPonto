@@ -1,36 +1,54 @@
 const express = require('express');
 const { registerPonto } = require('./puppeteerHelper');
 
-function startAPI() {
-  const app = express();
-  const port = 3000;
+let server = null;
 
-  app.use(express.json());
+function startAPI(port = 3000, logFn = console.log) {
+  return new Promise((resolve, reject) => {
+    const app = express();
+    app.use(express.json());
 
-  // Use um prefixo "/api"
-  const router = express.Router();
+    app.post('/v1/registrar-ponto', async (req, res) => {
+      const { employerCode, pin } = req.body;
 
-  router.post('/registrar-ponto', async (req, res) => {
-    console.log('➡️ Chamada recebida em /api/registrar-ponto');
-    const { employerCode, pin } = req.body;
+      if (!employerCode || !pin) {
+        logFn('⚠️ Requisição incompleta.');
+        return res.status(400).json({ error: 'Parâmetros faltando' });
+      }
 
-    if (!employerCode || !pin) {
-      return res.status(400).json({ error: 'Parâmetros faltando' });
-    }
+      try {
+        logFn(`📩 Requisição recebida para código: ${employerCode}`);
+        await registerPonto(employerCode, pin, logFn);
+        logFn('✅ Ponto registrado com sucesso!');
+        res.status(200).json({ status: 'Ponto registrado com sucesso!' });
+      } catch (error) {
+        logFn(`❌ Erro ao registrar ponto: ${error.message}`);
+        res.status(500).json({ error: 'Erro ao registrar ponto.' });
+      }
+    });
 
-    try {
-      await registerPonto(employerCode, pin);
-      res.status(200).json({ status: 'Ponto registrado com sucesso!' });
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao registrar ponto.' });
-    }
-  });
+    server = app.listen(port, () => {
+      logFn(`✅ API rodando em http://localhost:${port}`);
+      resolve();
+    });
 
-  app.use('/api', router); // Prefixo adicionado aqui
-
-  app.listen(port, () => {
-    console.log(`✅ API rodando em http://localhost:${port}`);
+    server.on('error', (err) => {
+      reject(err);
+    });
   });
 }
 
-module.exports = startAPI;
+function stopAPI() {
+  return new Promise((resolve) => {
+    if (server) {
+      server.close(() => {
+        server = null;
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+module.exports = { startAPI, stopAPI };
