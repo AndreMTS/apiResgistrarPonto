@@ -7,6 +7,7 @@ let mainWindow;
 let tray = null;
 let currentPort = 3000;
 let apiRunning = false;
+let visualizarPuppeteer = false; // Variável que controla se o Puppeteer será visível ou não
 
 // Caminho do config.json
 const configPath = path.join(__dirname, 'config.json');
@@ -15,32 +16,34 @@ function loadConfig() {
   if (fs.existsSync(configPath)) {
     const config = JSON.parse(fs.readFileSync(configPath));
     currentPort = config.port || 3000;
+    visualizarPuppeteer = config.visualizarPuppeteer || false; // Carrega a configuração de visibilidade do Puppeteer
   } else {
-    fs.writeFileSync(configPath, JSON.stringify({ port: currentPort }, null, 2));
+    fs.writeFileSync(configPath, JSON.stringify({ port: currentPort, visualizarPuppeteer }, null, 2));
   }
 }
 
-function saveConfig(port) {
-  fs.writeFileSync(configPath, JSON.stringify({ port }, null, 2));
+function saveConfig() {
+  fs.writeFileSync(configPath, JSON.stringify({ port: currentPort, visualizarPuppeteer }, null, 2));
 }
 
 function sendStatus() {
   if (mainWindow) {
     mainWindow.webContents.send('porta-api', currentPort);
     mainWindow.webContents.send('status-api', apiRunning ? '🟢 Ativa' : '🔴 Inativa');
+    mainWindow.webContents.send('visualizacao-puppeteer', visualizarPuppeteer);
   }
 }
 
-function sendLog(log) {
-  if (mainWindow) {
-    mainWindow.webContents.send('log-api', log);
-  }
+function sendLog(mensagem) {
+  const data = new Date().toLocaleTimeString();
+  const fullMsg = `[${data}] ${mensagem}<br>`;
+  mainWindow.webContents.send('log-api', fullMsg);
 }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 600,
-    height: 500,
+    height: 400,
     resizable: false,
     icon: path.join(__dirname, 'icon.jpg'),
     webPreferences: {
@@ -93,10 +96,10 @@ async function startOrRestartAPI(port) {
   }
 
   try {
-    await startAPI(port, sendLog);
+    await startAPI(port, sendLog, visualizarPuppeteer); // Passando a variável visualizarPuppeteer para o API
     apiRunning = true;
     currentPort = port;
-    saveConfig(port);
+    saveConfig();
   } catch (err) {
     apiRunning = false;
     sendLog(`❌ Erro ao iniciar API: ${err.message}`);
@@ -112,6 +115,13 @@ ipcMain.on('solicitar-status', () => {
 ipcMain.on('reiniciar-api', (_, novaPorta) => {
   const porta = parseInt(novaPorta, 10) || currentPort;
   startOrRestartAPI(porta);
+});
+
+// Adicionando IPC para alterar a visibilidade do Puppeteer
+ipcMain.on('alterar-visualizacao-puppeteer', (_, visualizar) => {
+  visualizarPuppeteer = visualizar;
+  saveConfig(); // Salva a nova configuração
+  console.log(`Exibição do Puppeteer: ${visualizarPuppeteer ? 'Visível' : 'Oculto'}`);
 });
 
 app.whenReady().then(() => {

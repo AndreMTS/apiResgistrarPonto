@@ -3,7 +3,7 @@ const { registerPonto } = require('./puppeteerHelper');
 
 let server = null;
 
-function startAPI(port = 3000, logFn = console.log) {
+function startAPI(port = 3000, logFn = console.log, visualizarPuppeteer = false) {
   return new Promise((resolve, reject) => {
     const app = express();
     app.use(express.json());
@@ -18,7 +18,7 @@ function startAPI(port = 3000, logFn = console.log) {
 
       try {
         logFn(`📩 Requisição recebida para código: ${employerCode}`);
-        await registerPonto(employerCode, pin, logFn);
+        await registerPonto(employerCode, pin, logFn, visualizarPuppeteer); // Passando a visibilidade do Puppeteer
         logFn('✅ Ponto registrado com sucesso!');
         res.status(200).json({ status: 'Ponto registrado com sucesso!' });
       } catch (error) {

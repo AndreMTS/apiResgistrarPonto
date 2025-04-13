@@ -1,3 +1,4 @@
 {
-  "port": 1026
+  "port": 1024,
+  "visualizarPuppeteer": true
 }

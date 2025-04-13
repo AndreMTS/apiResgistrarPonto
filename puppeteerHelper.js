@@ -1,7 +1,8 @@
 const puppeteer = require('puppeteer');
 
-async function registerPonto(employerCode, pin, logFn) {
-  const browser = await puppeteer.launch({ headless: false });
+async function registerPonto(employerCode, pin, logFn, headless = true) {
+  // O parâmetro 'headless' vai definir se o Puppeteer será visível ou não
+  const browser = await puppeteer.launch({ headless: headless }); // Aqui, passamos a variável headless
   const page = await browser.newPage();
 
   try {
@@ -27,7 +28,6 @@ async function registerPonto(employerCode, pin, logFn) {
 
     logFn('⏳ Aguardando o processo de registro...');
     await new Promise(resolve => setTimeout(resolve, 5000));
-
 
     logFn('✅ Ponto registrado com sucesso!');
   } catch (error) {
