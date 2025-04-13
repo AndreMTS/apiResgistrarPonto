@@ -7,23 +7,48 @@ let mainWindow;
 let tray = null;
 let currentPort = 3000;
 let apiRunning = false;
-let visualizarPuppeteer = false; // Variável que controla se o Puppeteer será visível ou não
+let visualizarPuppeteer = false;
+let configPath = ''; // Caminho do config externo
 
-// Caminho do config.json
-const configPath = path.join(__dirname, 'config.json');
+function getUserConfigPath() {
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, 'config.json');
+}
 
 function loadConfig() {
-  if (fs.existsSync(configPath)) {
-    const config = JSON.parse(fs.readFileSync(configPath));
-    currentPort = config.port || 3000;
-    visualizarPuppeteer = config.visualizarPuppeteer || false; // Carrega a configuração de visibilidade do Puppeteer
-  } else {
-    fs.writeFileSync(configPath, JSON.stringify({ port: currentPort, visualizarPuppeteer }, null, 2));
+  configPath = getUserConfigPath();
+
+  if (!fs.existsSync(configPath)) {
+    const defaultConfigPath = path.join(__dirname, 'config.json');
+    if (fs.existsSync(defaultConfigPath)) {
+      fs.copyFileSync(defaultConfigPath, configPath);
+    } else {
+      // Cria um default se nem o modelo existir
+      fs.writeFileSync(configPath, JSON.stringify({
+        port: 3000,
+        visualizarPuppeteer: false
+      }, null, 2));
+    }
   }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+  // Atualiza as variáveis globais
+  currentPort = config.port || 3000;
+  visualizarPuppeteer = config.visualizarPuppeteer || false;
+
+  return config;
 }
 
 function saveConfig() {
-  fs.writeFileSync(configPath, JSON.stringify({ port: currentPort, visualizarPuppeteer }, null, 2));
+  const config = {
+    port: currentPort,
+    visualizarPuppeteer
+  };
+
+  if (configPath) {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  }
 }
 
 function sendStatus() {
@@ -45,7 +70,7 @@ function createWindow() {
     width: 600,
     height: 400,
     resizable: false,
-    icon: path.join(__dirname, 'icon.jpg'),
+    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -68,7 +93,7 @@ function createWindow() {
 }
 
 function createTray() {
-  tray = new Tray(path.join(__dirname, 'icon.jpg'));
+  tray = new Tray(path.join(__dirname, 'icon.png'));
 
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Mostrar', click: () => mainWindow.show() },
@@ -79,7 +104,7 @@ function createTray() {
       }},
   ]);
 
-  tray.setToolTip('API Tangerino Ponto');
+  tray.setToolTip('API Puppeteer Tangerino Ponto');
   tray.setContextMenu(contextMenu);
 
   tray.on('double-click', () => {
@@ -96,10 +121,10 @@ async function startOrRestartAPI(port) {
   }
 
   try {
-    await startAPI(port, sendLog, visualizarPuppeteer); // Passando a variável visualizarPuppeteer para o API
+    await startAPI(port, sendLog, visualizarPuppeteer);
     apiRunning = true;
     currentPort = port;
-    saveConfig();
+    saveConfig(); // Salva nova porta e estado de visualização
   } catch (err) {
     apiRunning = false;
     sendLog(`❌ Erro ao iniciar API: ${err.message}`);
@@ -107,6 +132,8 @@ async function startOrRestartAPI(port) {
 
   sendStatus();
 }
+
+// Eventos do IPC
 
 ipcMain.on('solicitar-status', () => {
   sendStatus();
@@ -117,15 +144,16 @@ ipcMain.on('reiniciar-api', (_, novaPorta) => {
   startOrRestartAPI(porta);
 });
 
-// Adicionando IPC para alterar a visibilidade do Puppeteer
 ipcMain.on('alterar-visualizacao-puppeteer', (_, visualizar) => {
   visualizarPuppeteer = visualizar;
-  saveConfig(); // Salva a nova configuração
+  saveConfig();
   console.log(`Exibição do Puppeteer: ${visualizarPuppeteer ? 'Visível' : 'Oculto'}`);
 });
 
+// Início do app
+
 app.whenReady().then(() => {
-  loadConfig();
+  loadConfig(); // Agora carrega e define valores no início
   createWindow();
   createTray();
   startOrRestartAPI(currentPort);

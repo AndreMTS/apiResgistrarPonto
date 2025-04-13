@@ -1,13 +1,42 @@
 {
-  "name": "api-bater-ponto",
+  "name": "api-ppt-ponto",
   "version": "1.0.0",
+  "description": "API para bater ponto com puppeteer",
+  "author": "Andremts",
   "main": "main.js",
+  "build": {
+    "asar": true,
+    "appId": "andremts.api.puppeteer",
+    "productName": "API puppeteer Tangerino",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "api.js",
+      "puppeteerHelper.js",
+      "index.html",
+      "config.json",
+      "package.json",
+      "icon.png",
+      "styles.css",
+      "!**/node_modules/**/test/**"
+    ],
+    "win": {
+      "target": ["portable", "zip"],
+      "icon": "icon.ico"
+    }
+  },
   "scripts": {
+    "build": "electron-builder",
     "start": "electron ."
   },
   "dependencies": {
-    "electron": "^35.1.5",
     "express": "^4.18.2",
     "puppeteer": "^24.6.1"
+  },
+  "devDependencies": {
+    "electron-builder": "^26.0.12",
+    "electron": "^35.1.5"
   }
 }

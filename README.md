@@ -1,4 +1,4 @@
-# API Tangerino - Registro de Ponto Automatizado
+# API API Puppeteer Tangerino - Registro de Ponto Automatizado
 
 Este projeto implementa uma aplicação baseada em **ElectronJS** e **Express** para registrar pontos automaticamente no sistema **Tangerino**. A aplicação utiliza **Puppeteer** para interagir com a página do Tangerino e realizar o registro de ponto de forma automatizada, sem a necessidade de intervenção manual.
 
