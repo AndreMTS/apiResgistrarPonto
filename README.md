@@ -1,62 +1,97 @@
-# API API Puppeteer Tangerino - Registro de Ponto Automatizado
+## Tangerino Automator - API de Registro de Ponto
 
-Este projeto implementa uma aplicação baseada em **ElectronJS** e **Express** para registrar pontos automaticamente no sistema **Tangerino**. A aplicação utiliza **Puppeteer** para interagir com a página do Tangerino e realizar o registro de ponto de forma automatizada, sem a necessidade de intervenção manual.
+Aplicação Electron com Puppeteer para registro automatizado no sistema Tangerino via API REST.
 
-## Funcionalidades
+## 🌟 Funcionalidades Principais
 
-- **API Express**: Exposição de uma API REST para registrar o ponto utilizando código do empregador e PIN fornecidos pelo usuário.
-- **Integração com Puppeteer**: Navegação automática no sistema Tangerino para registrar o ponto com um simples envio de dados via POST.
-- **Interface Visual com Electron**: Interface gráfica que exibe informações sobre o status da API e logs de atividades em tempo real.
-- **Modo Tray**: A aplicação pode ser minimizada para a bandeja do sistema, permitindo o funcionamento em segundo plano sem ocupar espaço na tela.
-- **Configuração da Porta**: Possibilidade de alterar a porta onde a API está rodando diretamente pela interface.
-- **Reinício da API**: Capacidade de reiniciar a API sem fechar a aplicação, mantendo o serviço contínuo.
-- **Exibição de Logs**: Logs da execução da API são mostrados em tempo real na interface, proporcionando uma visão clara das atividades realizadas.
+### Automação Completa
 
-## Como Funciona
+*   🤖 Navegação automática no Tangerino via Puppeteer
+*   📅 Registro de pontos com código do empregador e PIN
+*   🔄 Atualização de status em tempo real
 
-1. **Inicie a Aplicação**: Ao iniciar a aplicação, a interface gráfica será aberta, informando que a API está rodando em uma porta específica (padrão: `3000`).
-2. **Registre o Ponto**: A API estará disponível na URL `http://localhost:3000/api/v1/registrar-ponto`. Envie uma requisição POST com os parâmetros `employerCode` e `pin` para registrar o ponto no sistema Tangerino.
-3. **Acompanhe o Status**: O status da API, a porta atual, e os logs da execução são exibidos na interface. Também é possível reiniciar a API diretamente pela interface.
-4. **Modo Tray**: Você pode minimizar a aplicação para a bandeja do sistema, mantendo-a em funcionamento sem ocupar espaço na tela.
+### Interface Amigável
 
-## Instalação
+*   🖥️ Painel de controle com logs de atividades
+*   🚦 Indicador visual do status da API
+*   ⚙️ Controles de configuração fácil
 
-1. Clone o repositório:
+### Funcionalidades Avançadas
 
-```bash
+*   🔄 Reinício dinâmico da API
+*   🔌 Alteração de porta sem reiniciar o app
+*   📌 Modo tray para execução em segundo plano
+
+## 🚀 Como Funciona
+
+1.  **Backend API** (Node.js/Express)
+    *   Endpoint POST `/api/v1/registrar-ponto`
+    *   Processa as credenciais
+    *   Dispara a automação via Puppeteer
+2.  **Frontend Electron**
+    *   Interface gráfica de controle
+    *   Exibição de logs em tempo real
+    *   Gerenciamento de configurações
+3.  **Integração**
+    *   Comunicação segura entre componentes
+    *   Feedback visual imediato
+
+## 📦 Instalação
+
+```plaintext
 git clone https://github.com/seu-usuario/api-tangerino.git
 cd api-tangerino
-```
-
-2. Instale as dependências:
-
-```bash
 npm install
-```
-
-3. Inicie a aplicação:
-
-```bash
 npm start
 ```
 
-A aplicação estará rodando na porta `3000` por padrão. Você pode acessar a API no endpoint `http://localhost:3000/api/v1/registrar-ponto`.
+## ⚙️ Configuração
 
-## Tecnologias Usadas
+1.  **Porta da API**
+    *   Padrão: 3000
+    *   Alterável via interface gráfica
+2.  **Credenciais**
+    *   Enviadas via POST para a API
+    *   Armazenadas apenas em memória
+3.  **Tray Icon**
+    *   Clique direito para opções
+    *   Duplo clique para restaurar janela
 
-- **ElectronJS**: Para a criação da interface gráfica e controle da janela da aplicação.
-- **Express**: Para criar a API REST.
-- **Puppeteer**: Para automação no navegador e registro de ponto no Tangerino.
-- **Node.js**: Para execução do backend e lógica de comunicação com o Tangerino.
+## 🛠️ Tecnologias Utilizadas
 
-## Contribuições
+*   **EletronJS** - Framework para aplicação desktop
+*   **Puppeteer** - Automação de navegador
+*   **Express** - Servidor API REST
+*   **Node.js** - Ambiente de execução
 
-Sinta-se à vontade para contribuir com melhorias e correções. Se você encontrar algum bug ou tiver uma sugestão, abra um *issue* ou envie um *pull request*.
+## 🔌 Uso com Extensão Chrome
 
-## Licença
+Esta aplicação é projetada para funcionar em conjunto com a [extensão Chrome Bateu Ponto](URL_DA_EXTENSAO).
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+1.  Inicie esta aplicação
+2.  Configure a extensão com:
+    *   URL: `http://localhost:3000/api/v1/registrar-ponto`
+    *   Mesma porta configurada aqui
 
----
+## 🐛 Solução de Problemas
 
-Você pode adicionar ou ajustar conforme as suas necessidades.
+### Problemas Comuns:
+
+1.  API não responde:
+    *   Verifique se o Electron está rodando
+    *   Confira a porta configurada
+2.  Registro falha:
+    *   Confira as credenciais no Tangerino
+    *   Verifique os logs de erro
+
+## 🤝 Contribuição
+
+1.  Faça um fork do projeto
+2.  Crie sua branch (`git checkout -b feature/nova-feature`)
+3.  Commit suas mudanças (`git commit -am 'Add new feature'`)
+4.  Push para a branch (`git push origin feature/nova-feature`)
+5.  Abra um Pull Request
+
+## 📄 Licença
+
+MIT - Veja o arquivo [LICENSE](LICENSE) para detalhes.

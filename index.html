@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>API Puppeteer Tangerino</title>
+  <title>API Puppeteer Bateu Ponto</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     * {
@@ -70,6 +70,35 @@
       padding: 15px;
       border-radius: 6px;
       margin-bottom: 20px;
+    }
+
+    .link-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .copy-button {
+      background-color: #2b7a78;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    .copy-button:hover {
+      background-color: #205d5a;
+    }
+
+    .copy-button .material-icons {
+      font-size: 16px;
     }
 
     h1 {
@@ -162,15 +191,22 @@
 
   <div class="content">
     <div class="tab-content active" id="status">
-      <h1>Status da API</h1>
+      <h1>🌐 Status da API</h1>
       <div class="status-box">
         <strong>Status:</strong> <span id="status-text">Inicializando...</span><br>
         <strong>Porta atual:</strong> <span id="porta-atual">---</span>
       </div>
+      <div class="link-container">
+        <span><strong>🔗 API: </strong>http://localhost:<span id="porta-atual-link">---</span>/registrar-ponto</span>
+        <button class="copy-button" id="copy-link">
+          <span class="material-icons">content_copy</span>
+          Copiar
+        </button>
+      </div>
     </div>
 
     <div class="tab-content" id="config">
-      <h1>Configurações</h1>
+      <h1>⚙️ Configurações</h1>
       <label for="nova-porta">Alterar porta:</label>
       <input type="number" id="nova-porta" placeholder="ex: 3001" min="1024" max="65535" />
 
@@ -222,10 +258,23 @@
 
     const statusSpan = document.getElementById('status-text');
     const portaSpan = document.getElementById('porta-atual');
+    const portaSpanLink = document.getElementById('porta-atual-link');
     const btnReiniciar = document.getElementById('btn-reiniciar');
     const novaPortaInput = document.getElementById('nova-porta');
     const logsDiv = document.getElementById('logs-content');
     const visualizarPuppeteerCheckbox = document.getElementById('visualizarPuppeteer');
+    const copyButton = document.getElementById('copy-link');
+
+    copyButton.addEventListener('click', () => {
+      const link = `http://localhost:${portaSpanLink.textContent}/registrar-ponto`;
+      navigator.clipboard.writeText(link).then(() => {
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '<span class="material-icons">check</span>Copiado!';
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+        }, 2000);
+      });
+    });
 
     ipcRenderer.on('status-api', (_, status) => {
       statusSpan.textContent = status;
@@ -233,6 +282,7 @@
 
     ipcRenderer.on('porta-api', (_, porta) => {
       portaSpan.textContent = porta;
+      portaSpanLink.textContent = porta;
     });
 
     ipcRenderer.on('log-api', (_, log) => {
