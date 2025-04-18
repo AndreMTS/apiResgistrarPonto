@@ -66,7 +66,7 @@ npm start
 
 ## 🔌 Uso com Extensão Chrome
 
-Esta aplicação é projetada para funcionar em conjunto com a [extensão Chrome Bateu Ponto](URL_DA_EXTENSAO).
+Esta aplicação é projetada para funcionar em conjunto com a [extensão Chrome Bateu Ponto](https://github.com/AndreMTS/lembretePonto).
 
 1.  Inicie esta aplicação
 2.  Configure a extensão com:
