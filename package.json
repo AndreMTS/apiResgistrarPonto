@@ -7,7 +7,7 @@
   "build": {
     "asar": true,
     "appId": "andremts.api.puppeteer",
-    "productName": "API puppeteer Tangerino",
+    "productName": "API puppeteer",
     "directories": {
       "output": "dist"
     },
@@ -19,11 +19,17 @@
       "config.json",
       "package.json",
       "icon.png",
+      "icon.ico",
       "styles.css",
       "!**/node_modules/**/test/**"
     ],
     "win": {
-      "target": ["portable", "zip"],
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "icon.ico"
     }
   },

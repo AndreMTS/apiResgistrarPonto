@@ -1,13 +1,25 @@
 const puppeteer = require('puppeteer');
 
 async function registerPonto(employerCode, pin, logFn, headless = true) {
-  // O parâmetro 'headless' vai definir se o Puppeteer será visível ou não
-  const browser = await puppeteer.launch({ headless: headless }); // Aqui, passamos a variável headless
+  const browser = await puppeteer.launch({
+    headless: headless,
+    args: [
+      '--use-fake-ui-for-media-stream', // Bloqueia prompt de câmera/mic
+      '--no-sandbox',
+      '--disable-setuid-sandbox'
+    ]
+  });
+
+  const context = browser.defaultBrowserContext();
+
+  // Bloqueia explicitamente permissões para câmera e microfone
+  await context.overridePermissions('https://app.tangerino.com.br', []);
+
   const page = await browser.newPage();
 
   try {
     logFn('🔍 Iniciando processo de registro de ponto...');
-    
+
     await page.goto('https://app.tangerino.com.br/Tangerino', {
       waitUntil: 'domcontentloaded'
     });
@@ -18,7 +30,7 @@ async function registerPonto(employerCode, pin, logFn, headless = true) {
     await page.click('a.login-aba[href*="baterPonto"]');
 
     logFn('🖱️ Clicando para registrar ponto...');
-    
+
     await page.waitForSelector('#formCodigoEmpregadorPin', { visible: true });
 
     logFn('⌨️ Preenchendo os dados...');
@@ -27,7 +39,7 @@ async function registerPonto(employerCode, pin, logFn, headless = true) {
     await page.click('#registraPonto');
 
     logFn('⏳ Aguardando o processo de registro...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 7000));
 
     logFn('✅ Ponto registrado com sucesso!');
   } catch (error) {
